@@ -1,5 +1,8 @@
 package com.example.szhangcs.sendsms;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import java.util.Date;
 
 /**
@@ -13,6 +16,7 @@ public class SmsData {
     private Date date;
     private boolean isReplyed;
     private boolean isGreeting;
+    private boolean isSelected;
 
     public SmsData () {
     }
@@ -20,13 +24,17 @@ public class SmsData {
     public SmsData (String contractName,
                      String phoneNumber,
                      String smsData,
-                     boolean isReplyed,
-                     boolean isGreeting) {
+                     boolean isReplyed) {
         this.contactName = contractName;
         this.phoneNumber = phoneNumber;
         this.smsData = smsData;
         this.isReplyed = isReplyed;
-        this.isGreeting = isGreeting;
+        this.isGreeting = isGreeting();
+        if (isReplyed && !isGreeting) {
+            isSelected = false;
+        } else {
+            isSelected = true;
+        }
     }
 
     public SmsData (SmsData input) {
@@ -36,7 +44,9 @@ public class SmsData {
         this.date = input.getDate();
         this.isReplyed = input.isReplyed();
         this.isGreeting = input.isGreeting();
+        this.isSelected = input.isSelected();
     }
+
     public String getContactName() {
         return contactName;
     }
@@ -59,31 +69,35 @@ public class SmsData {
     }
 
     // TODO(3feng:P2) should implement this function
-    public boolean isGreeting() {
+    private boolean isGreeting() {
         return isGreeting;
     }
 
-    public void setContactName(String contactName) {
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    private void setContactName(String contactName) {
         this.contactName = contactName;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
+    private void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
-    public void setSmsData(String smsData) {
+    private void setSmsData(String smsData) {
         this.smsData = smsData;
     }
 
-    public void setReplyed(boolean isReplyed) {
+    private void setReplyed(boolean isReplyed) {
         this.isReplyed = isReplyed;
     }
 
-    public void setDate(Date date) {
+    private void setDate(Date date) {
         this.date = date;
     }
 
-    public void setIsGreeting(boolean isGreeting) {
-        this.isGreeting = isGreeting;
+    public void setIsSelected(boolean isSelected) {
+        this.isSelected = isSelected;
     }
 }

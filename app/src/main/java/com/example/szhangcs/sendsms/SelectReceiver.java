@@ -1,6 +1,8 @@
 package com.example.szhangcs.sendsms;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -42,6 +44,9 @@ public class SelectReceiver extends AppCompatActivity {
         setStartDate();
         ListView listView = (ListView) findViewById(R.id.selectReceiverListView);
         receivers = getReceivers();
+        for (SmsData receiver : receivers) {
+            Log.d("3feng", "here!" + receiver.getPhoneNumber() + ":" + receiver.isSelected());
+        }
         ReceiverRowAdapter adapter = new ReceiverRowAdapter(this, receivers);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -49,11 +54,11 @@ public class SelectReceiver extends AppCompatActivity {
                                     int position, long id) {
                 SmsData smsData = (SmsData) parent.getItemAtPosition(position);
                 if (view != null) {
-                    CheckBox checkBox = (CheckBox) findViewById(R.id.select_receiver_row_checkbox);
+                    CheckBox checkBox = (CheckBox) view.findViewById(
+                            R.id.select_receiver_row_checkbox);
                     checkBox.setChecked(!checkBox.isChecked());
-                    smsData.setIsGreeting(!smsData.isGreeting());
+                    smsData.setIsSelected(checkBox.isChecked());
                 }
-                Log.d("3feng", "item selected");
             }
         });
     }
@@ -64,7 +69,7 @@ public class SelectReceiver extends AppCompatActivity {
         Intent intent = new Intent();
         ArrayList<String> selectedReceivers = new ArrayList<>();
         for (SmsData receiver : receivers) {
-            if (receiver.isGreeting()) {
+            if (receiver.isSelected()) {
                 selectedReceivers.add(new String(receiver.getPhoneNumber()));
             }
         }
@@ -83,7 +88,7 @@ public class SelectReceiver extends AppCompatActivity {
                 Intent intent = new Intent();
                 ArrayList<String> selectedReceivers = new ArrayList<>();
                 for (SmsData receiver : receivers) {
-                    if (receiver.isGreeting()) {
+                    if (receiver.isSelected()) {
                         selectedReceivers.add(new String(receiver.getPhoneNumber()));
                     }
                 }
@@ -111,14 +116,14 @@ public class SelectReceiver extends AppCompatActivity {
         for (SmsData sms : smsList) {
             if (mapPhoneNumberToData.containsKey(sms.getPhoneNumber())) {
                 SmsData mappedData = mapPhoneNumberToData.get(sms.getPhoneNumber());
-                if (!mappedData.isGreeting()) {
+                if (!mappedData.isSelected()) {
                     mapPhoneNumberToData.put(sms.getPhoneNumber(), sms);
                 }
             } else {
                 mapPhoneNumberToData.put(sms.getPhoneNumber(), sms);
             }
         }
-        return new ArrayList<SmsData>(mapPhoneNumberToData.values());
+        return new ArrayList<>(mapPhoneNumberToData.values());
     }
 
     // Will return a list of short messages that user received in 10 days
@@ -127,6 +132,10 @@ public class SelectReceiver extends AppCompatActivity {
 
         // get a contract map from phone number to name
         Map<String, String> contactMap = getContactList();
+
+        // prepare sharedPreference to check isReplyed
+        SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preference),
+                Context.MODE_PRIVATE);
 
         // search for candidate sms
         String filter = "date>=" + startDate.getTime();
@@ -142,7 +151,7 @@ public class SelectReceiver extends AppCompatActivity {
                 String dateString = smsInboxCursor.getString(indexDate);
                 Date date = new Date(Long.valueOf(dateString));
                 String name = contactMap.get(number);
-                smsRecords.add(new SmsData(name, number, body, false, true));
+                smsRecords.add(new SmsData(name, number, body, sharedPreferences.getBoolean(number, false)));
                 smsInboxCursor.moveToNext();
             }
         }
@@ -168,5 +177,22 @@ public class SelectReceiver extends AppCompatActivity {
         return result;
     }
 
-
+//    private void initilizeReplyRecord() {
+//        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+//        if (!sharedPref.getBoolean(getString(R.string.is_first_time), false)) {
+//            SharedPreferences.Editor editor = sharedPref.edit();
+//            editor.putBoolean(getString(R.string.is_first_time), true);
+//
+//            Cursor cursor = getContentResolver().query(
+//                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+//            final int indexPhone = cursor.getColumnIndex(
+//                    ContactsContract.CommonDataKinds.Phone.NUMBER);
+//            while(cursor.moveToNext()) {
+//                String phone = cursor.getString(indexPhone);
+//                editor.putBoolean(phone, true);
+//            }
+//            editor.commit();
+//        }
+//
+//    }
 }

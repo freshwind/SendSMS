@@ -1,12 +1,17 @@
 package com.example.szhangcs.sendsms;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -77,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // TODO(3feng:P2) show progress bar when sending sms
-    // TODO(3feng:P2) alter user when the message has to be cut into two parts
     public void sendMessage(View view) {
         EditText editText = (EditText) findViewById(R.id.edit_message);
         messageContext = editText.getText().toString();
@@ -94,9 +98,16 @@ public class MainActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG).show();
             return;
         }
+        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference),
+                Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+
         for (String destinationPhoneNumber : receivers) {
             sendSMS(destinationPhoneNumber);
+            editor.putBoolean(destinationPhoneNumber, true);
+            Log.d("3feng", "set " + destinationPhoneNumber + "as true");
         }
+        editor.apply();
         Intent intent = new Intent(this, DisplayMessageActivity.class);
 
         intent.putExtra(EXTRA_MESSAGE, messageContext);

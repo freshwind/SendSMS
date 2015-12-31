@@ -1,6 +1,7 @@
 package com.example.szhangcs.sendsms;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +47,7 @@ class ReceiverRowAdapter extends BaseAdapter {
         View vi = convertView;
         if (vi == null)
             vi = inflater.inflate(R.layout.list_row, null);
-        SmsData smsData = data.get(position);
+        final SmsData smsData = data.get(position);
         TextView nameText = (TextView) vi.findViewById(R.id.select_receiver_row_name);
         TextView isReplyedText = (TextView) vi.findViewById(R.id.select_receiver_row_replyed);
         TextView smsText = (TextView) vi.findViewById(R.id.select_receiver_row_data);
@@ -68,16 +69,24 @@ class ReceiverRowAdapter extends BaseAdapter {
         }
 
         // set sms
-        smsText.setText(getBriefSms(smsData.getSmsData()));
+        smsText.setText(smsData.getSmsData());
 
         // set checkBox
-        if (smsData.isGreeting()) {
+        if (smsData.isSelected()) {
             checkBox.setChecked(true);
         }
+        checkBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (((CheckBox) v).isChecked()) {
+                    smsData.setIsSelected(true);
+                    Log.d("3feng", "The check box is selected and smsData selected, phonenumber = " + smsData.getPhoneNumber());
+                } else {
+                    smsData.setIsSelected(false);
+                    Log.d("3feng", "The check box is un selected and smsData is unselected, phonenumber = " + smsData.getPhoneNumber());
+                }
+            }
+        });
         return vi;
-    }
-
-    private String getBriefSms(String sms) {
-        return sms;
     }
 }
